@@ -1,0 +1,11 @@
+fastapi
+ujson
+email_validator
+httpx
+jinja2
+python-multipart
+itsdangerous
+pyyaml
+uvicorn
+orjson
+sqlalchemy
