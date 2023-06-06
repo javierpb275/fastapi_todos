@@ -8,4 +8,6 @@ itsdangerous
 pyyaml
 uvicorn
 orjson
+starlette
+pydantic
 sqlalchemy
