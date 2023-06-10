@@ -11,3 +11,4 @@ orjson
 starlette
 pydantic
 sqlalchemy
+passlib[bcrypt]
