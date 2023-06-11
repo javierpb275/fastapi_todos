@@ -8,7 +8,10 @@ from starlette import status
 from database import SessionLocal
 from models import Todos
 
-router = APIRouter()
+router = APIRouter(
+    prefix='/api/todos',
+    tags=['todos']
+)
 
 
 def get_db():
@@ -29,12 +32,12 @@ class TodoRequest(BaseModel):
     complete: bool
 
 
-@router.get("/api/todos", status_code=status.HTTP_200_OK)
+@router.get("/", status_code=status.HTTP_200_OK)
 async def read_all_todos(db: db_dependency):
     return db.query(Todos).all()
 
 
-@router.get("/api/todos/{todo_id}", status_code=status.HTTP_200_OK)
+@router.get("/{todo_id}", status_code=status.HTTP_200_OK)
 async def read_todo(db: db_dependency, todo_id: int = Path(gt=0)):
     todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
     if todo_model is not None:
@@ -42,14 +45,14 @@ async def read_todo(db: db_dependency, todo_id: int = Path(gt=0)):
     raise HTTPException(status_code=404, detail='Todo Not Found.')
 
 
-@router.post("/api/todos", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_todo(db: db_dependency, todo_request: TodoRequest):
     todo_model = Todos(**todo_request.dict())
     db.add(todo_model)
     db.commit()
 
 
-@router.put("/api/todos/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.put("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_todo(db: db_dependency, todo_request: TodoRequest, todo_id: int = Path(gt=0)):
     todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
     if todo_model is None:
@@ -62,7 +65,7 @@ async def update_todo(db: db_dependency, todo_request: TodoRequest, todo_id: int
     db.commit()
 
 
-@router.delete("/api/todos/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_todo(db: db_dependency, todo_id: int = Path(gt=0)):
     todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
     if todo_model is None:

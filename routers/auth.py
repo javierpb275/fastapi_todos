@@ -10,13 +10,16 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 
-router = APIRouter()
+router = APIRouter(
+    prefix='/api/auth',
+    tags=['auth']
+)
 
 SECRET_KEY = '36a53ee671a638fe54d82ba97653346d8f09db9a54893299210a31bd752f9c67'
 ALGORITHM = 'HS256'
 
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
-oauth2_bearer = OAuth2PasswordBearer(tokenUrl='token')
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl='api/auth/token')
 
 
 def get_db():
@@ -72,12 +75,12 @@ class Token(BaseModel):
     token_type: str
 
 
-@router.get("/api/auth", status_code=status.HTTP_200_OK)
+@router.get("/", status_code=status.HTTP_200_OK)
 async def read_all_users(db: db_dependency):
     return db.query(Users).all()
 
 
-@router.post("/api/auth", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency, create_user_request: CreateUserRequest):
     create_user_model = Users(
         email=create_user_request.email,
@@ -92,7 +95,7 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
     db.commit()
 
 
-@router.post("/api/token", response_model=Token)
+@router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
     user: Users = authenticate_user(form_data.username, form_data.password, db)
     if not user:
