@@ -12,3 +12,4 @@ starlette
 pydantic
 sqlalchemy
 passlib[bcrypt]
+python-jose[cryptography]
