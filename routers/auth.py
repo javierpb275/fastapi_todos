@@ -42,8 +42,8 @@ def authenticate_user(username: str, password: str, db) -> Union[Users, None]:
     return user
 
 
-def create_access_token(username: str, user_id: str, expires_delta: timedelta) -> str:
-    encode = {'sub': username, 'id': user_id}
+def create_access_token(username: str, user_id: str, role: str, expires_delta: timedelta) -> str:
+    encode = {'sub': username, 'id': user_id, 'role': role}
     expires = datetime.utcnow() + expires_delta
     encode.update({'exp': expires})
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -54,9 +54,10 @@ async def get_current_user(token: Annotated[str, Depends(OAuth2PasswordBearer)])
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get('sub')
         user_id: int = payload.get('id')
+        user_role: str = payload.get('role')
         if username is None or user_id is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate user.')
-        return {'username': username, 'id': user_id}
+        return {'username': username, 'id': user_id, 'user_role': user_role}
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate user.')
 
@@ -75,12 +76,12 @@ class Token(BaseModel):
     token_type: str
 
 
-@router.get("/", status_code=status.HTTP_200_OK)
+@router.get("", status_code=status.HTTP_200_OK)
 async def read_all_users(db: db_dependency):
     return db.query(Users).all()
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency, create_user_request: CreateUserRequest):
     create_user_model = Users(
         email=create_user_request.email,
@@ -100,5 +101,5 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     user: Users = authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate user.')
-    token = create_access_token(user.username, user.id, timedelta(minutes=20))
+    token = create_access_token(user.username, user.id, user.role, timedelta(minutes=20))
     return {'access_token': token, 'token_type': 'Bearer'}
