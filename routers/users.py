@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from starlette import status
 from database import SessionLocal
-from models import Todos, Users
+from models import Users
 from .auth import get_current_user
 from passlib.context import CryptContext
 
