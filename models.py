@@ -16,7 +16,7 @@ class Users(Base):
     is_active = Column(Boolean, default=True)
     role = Column(String)
     phone_number = Column(String)
-    address_id = Column(Integer, ForeignKey("address_id"), nullable=True)
+    address_id = Column(Integer, ForeignKey("address.id"), nullable=True)
 
     todos = relationship("Todos", back_populates="owner")
     address = relationship("Address", back_populates="user_address")
